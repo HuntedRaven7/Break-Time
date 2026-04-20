@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.HuntedRaven7.BreakTime</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+
+  <name>Break-Time</name>
+  <summary>Pomodoro timer and productivity app</summary>
+
+  <description>
+    <p>
+      Break-Time is a modern Pomodoro timer and productivity app built with
+      Rust, GTK4, and Libadwaita. It helps you focus by locking distracting
+      RSS feeds behind a work timer, so you earn your break before diving
+      into the news.
+    </p>
+    <p>Features include:</p>
+    <ul>
+      <li>Pomodoro Timer with 25m/50m work sessions, pause/resume, and desktop notifications</li>
+      <li>Persistent RSS Reader unlocked after completing a work session</li>
+      <li>Markdown Notes editor with syntax highlighting and theme selection</li>
+      <li>Reliable Reddit support via Redlib fallback instances</li>
+    </ul>
+  </description>
+
+  <launchable type="desktop-id">io.github.HuntedRaven7.BreakTime.desktop</launchable>
+
+  <url type="homepage">https://github.com/HuntedRaven7/Break-Time</url>
+  <url type="bugtracker">https://github.com/HuntedRaven7/Break-Time/issues</url>
+
+  <content_rating type="oars-1.1" />
+
+  <releases>
+    <release version="0.1.0" date="2026-04-19">
+      <description>
+        <p>Initial release.</p>
+      </description>
+    </release>
+  </releases>
+
+  <requires>
+    <display_length compare="ge">360</display_length>
+  </requires>
+
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+  </supports>
+</component>

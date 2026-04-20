@@ -30,6 +30,22 @@ sudo apt install libgtk-4-dev libadwaita-1-dev libgtksourceview-5-dev
 cargo run
 ```
 
+## Flatpak
+
+You can also build and install Break-Time as a Flatpak:
+
+```bash
+# Install the GNOME SDK and Rust extension (one-time setup)
+flatpak install flathub org.gnome.Sdk//47 org.gnome.Platform//47
+flatpak install flathub org.freedesktop.Sdk.Extension.rust-stable//24.08
+
+# Build and install locally
+flatpak-builder --user --install --force-clean build-dir io.github.HuntedRaven7.BreakTime.yml
+
+# Run
+flatpak run io.github.HuntedRaven7.BreakTime
+```
+
 ## Why?
 
 Break-Time is designed to help you focus. By locking your distracting RSS feeds (Reddit, news, etc.) behind a work timer, you can ensure you've earned your break before you dive into the news.

@@ -1,0 +1,47 @@
+<?xml version="2.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="tomato" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#c0392b;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="leaf" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#27ae60;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e8449;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Tomato body -->
+  <ellipse cx="64" cy="72" rx="46" ry="42" fill="url(#tomato)" />
+
+  <!-- Highlight -->
+  <ellipse cx="50" cy="58" rx="16" ry="12" fill="white" opacity="0.18" />
+
+  <!-- Stem -->
+  <rect x="60" y="24" width="8" height="18" rx="4" fill="#5d4037" />
+
+  <!-- Leaf left -->
+  <path d="M64 34 Q44 18 38 30 Q44 34 64 34Z" fill="url(#leaf)" />
+
+  <!-- Leaf right -->
+  <path d="M64 34 Q84 18 90 30 Q84 34 64 34Z" fill="url(#leaf)" />
+
+  <!-- Clock face -->
+  <circle cx="64" cy="74" r="22" fill="white" opacity="0.92" />
+  <circle cx="64" cy="74" r="20" fill="none" stroke="#c0392b" stroke-width="2" />
+
+  <!-- Clock tick marks -->
+  <line x1="64" y1="56" x2="64" y2="59" stroke="#c0392b" stroke-width="2" stroke-linecap="round" />
+  <line x1="64" y1="89" x2="64" y2="92" stroke="#c0392b" stroke-width="2" stroke-linecap="round" />
+  <line x1="46" y1="74" x2="49" y2="74" stroke="#c0392b" stroke-width="2" stroke-linecap="round" />
+  <line x1="79" y1="74" x2="82" y2="74" stroke="#c0392b" stroke-width="2" stroke-linecap="round" />
+
+  <!-- Clock center dot -->
+  <circle cx="64" cy="74" r="2.5" fill="#c0392b" />
+
+  <!-- Minute hand (pointing to 12) -->
+  <line x1="64" y1="74" x2="64" y2="60" stroke="#2c3e50" stroke-width="2.5" stroke-linecap="round" />
+
+  <!-- Hour hand (pointing to ~2) -->
+  <line x1="64" y1="74" x2="74" y2="65" stroke="#2c3e50" stroke-width="3" stroke-linecap="round" />
+</svg>

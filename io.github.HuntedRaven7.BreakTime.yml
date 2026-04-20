@@ -1,0 +1,40 @@
+app-id: io.github.HuntedRaven7.BreakTime
+runtime: org.gnome.Platform
+runtime-version: '47'
+sdk: org.gnome.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+
+command: break-time
+
+finish-args:
+  # Wayland & X11 display access
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --share=ipc
+  # Network access for RSS feeds
+  - --share=network
+  # Desktop notifications
+  - --talk-name=org.freedesktop.Notifications
+
+build-options:
+  append-path: /usr/lib/sdk/rust-stable/bin
+  env:
+    CARGO_HOME: /run/build/break-time/cargo
+    CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+  build-args:
+    - --share=network
+
+modules:
+  - name: break-time
+    buildsystem: simple
+    build-commands:
+      - cargo fetch --manifest-path Cargo.toml --verbose
+      - cargo build --release --verbose
+      - install -Dm755 target/release/break-time /app/bin/break-time
+      - install -Dm644 data/io.github.HuntedRaven7.BreakTime.desktop /app/share/applications/io.github.HuntedRaven7.BreakTime.desktop
+      - install -Dm644 data/io.github.HuntedRaven7.BreakTime.metainfo.xml /app/share/metainfo/io.github.HuntedRaven7.BreakTime.metainfo.xml
+      - install -Dm644 data/icons/hicolor/scalable/apps/io.github.HuntedRaven7.BreakTime.svg /app/share/icons/hicolor/scalable/apps/io.github.HuntedRaven7.BreakTime.svg
+    sources:
+      - type: dir
+        path: .

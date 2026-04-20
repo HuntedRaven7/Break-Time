@@ -14,7 +14,7 @@ struct FeedConfig {
 }
 
 fn get_config_path() -> Option<PathBuf> {
-    if let Some(proj_dirs) = ProjectDirs::from("com", "example", "break-time") {
+    if let Some(proj_dirs) = ProjectDirs::from("io.github", "HuntedRaven7", "BreakTime") {
         let config_dir = proj_dirs.config_dir();
         if !config_dir.exists() {
             let _ = fs::create_dir_all(config_dir);

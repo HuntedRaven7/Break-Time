@@ -22,7 +22,7 @@ fn main() -> glib::ExitCode {
     let _guard = rt.enter();
 
     let application = adw::Application::builder()
-        .application_id("com.example.BreakTime")
+        .application_id("io.github.HuntedRaven7.BreakTime")
         .build();
 
     application.connect_activate(build_ui);

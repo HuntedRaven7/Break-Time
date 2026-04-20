@@ -1,19 +1,19 @@
 [package]
 name = "break-time"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
 # GTK4 and Libadwaita for the GUI
-gtk4 = { version = "0.9", features = ["v4_12"] }
-libadwaita = { version = "0.7", features = ["v1_6"] }
+gtk4 = { version = "0.11", features = ["v4_16"] }
+libadwaita = { version = "0.9", features = ["v1_7"] }
 
 # Async runtime for network and timers
 tokio = { version = "1", features = ["full"] }
 
 # RSS parsing and fetching
 feed-rs = "2.3"
-reqwest = { version = "0.12", features = ["json"] }
+reqwest = { version = "0.13", features = ["json"] }
 
 # Markdown rendering/parsing
 pulldown-cmark = "0.13"
@@ -22,13 +22,13 @@ pulldown-cmark = "0.13"
 chrono = "0.4"
 
 # Source code view for the markdown editor (with syntax highlighting)
-sourceview5 = "0.9"
+sourceview5 = "0.11"
 
 # To allow cloning for async blocks
-glib = "0.20"
+glib = "0.22"
 
 # Native desktop notifications for Linux
-notify-rust = "4.11"
+notify-rust = "4.15"
 
 # Serialization for storage
 serde = { version = "1.0", features = ["derive"] }

@@ -7,3 +7,7 @@
 
 # MSVC Windows objects
 *.pdb
+
+# Flatpak build artifacts
+.flatpak-builder/
+build-dir/
