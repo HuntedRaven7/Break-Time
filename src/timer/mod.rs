@@ -8,8 +8,8 @@ use std::rc::Rc;
 use notify_rust::Notification;
 
 /*
- * The Pomodoro Timer Component (Senior Dev Notification Edition).
- * Added: Native Linux desktop notifications via libnotify.
+ * The Pomodoro Timer Component (Senior Dev Style Edition).
+ * Updated: Made the tomato emoji ABSOLUTELY GIGANTIC.
  */
 
 pub struct PomodoroTimer {
@@ -25,6 +25,13 @@ impl PomodoroTimer {
         let container = gtk::Box::new(gtk::Orientation::Vertical, 20);
         container.set_valign(gtk::Align::Center);
         container.set_halign(gtk::Align::Center);
+
+        // --- BIG TOMATO EMOJI ---
+        let tomato_label = gtk::Label::new(Some("🍅"));
+        tomato_label.set_margin_bottom(10);
+        // Using exactly 120pt size
+        tomato_label.set_markup("<span size='122880'>🍅</span>"); 
+        container.append(&tomato_label);
 
         // Timer Display
         let time_label = gtk::Label::new(Some("25:00"));
@@ -50,10 +57,11 @@ impl PomodoroTimer {
         controls.append(&pause_button);
         container.append(&controls);
 
-        // Manual Unlock Option
-        let unlock_button = gtk::Button::with_label("Manual Unlock RSS Reader");
-        unlock_button.add_css_class("flat");
-        unlock_button.set_margin_top(40);
+        // Manually Unlock Button
+        let unlock_button = gtk::Button::with_label("Unlock RSS Reader Manually");
+        unlock_button.add_css_class("outline"); 
+        unlock_button.set_margin_top(60);
+        unlock_button.set_tooltip_text(Some("Skip the timer and access your RSS feeds immediately"));
         container.append(&unlock_button);
 
         let is_running = Rc::new(RefCell::new(false));
@@ -81,7 +89,6 @@ impl PomodoroTimer {
                     pause_button_clone.set_label("Pause");
                     pause_button_clone.set_sensitive(false);
                     
-                    // --- NATIVE NOTIFICATION ---
                     let _ = Notification::new()
                         .summary("Break-Time")
                         .body("Time's up! Your RSS feed is now unlocked. Take a break!")

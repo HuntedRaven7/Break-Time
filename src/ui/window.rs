@@ -6,7 +6,7 @@ use gtk::glib;
 
 /* 
  * The main application window for Break-Time.
- * It uses a ViewStack to switch between the Timer, RSS reader, and Notes.
+ * Updated: Senior Dev Robust Unlocking Logic.
  */
 
 glib::wrapper! {
@@ -23,14 +23,38 @@ impl Window {
     // This method is called to unlock the RSS section
     pub fn unlock_rss(&self) {
         let imp = self.imp();
+        
+        // Idempotency: don't run unlocking logic twice
+        if imp.rss_unlocked.get() {
+            return;
+        }
         imp.rss_unlocked.set(true);
         
-        // Find the RSS page by its name and make it visible
+        // Find the RSS page (the Overlay)
         if let Some(rss_child) = imp.stack.child_by_name("rss") {
-            let page = imp.stack.page(&rss_child);
-            page.set_visible(true);
+            // 1. Re-enable the entire tab content
+            rss_child.set_sensitive(true);
+            
+            // 2. Dig into the overlay to find and enable the RSS container specifically
+            if let Some(overlay) = rss_child.downcast_ref::<gtk::Overlay>() {
+                if let Some(rss_container) = overlay.child() {
+                    rss_container.set_sensitive(true);
+                }
+                
+                // 3. Remove the lock screen definitively
+                // Overlays added via add_overlay are siblings of the main child
+                let mut current = overlay.first_child();
+                while let Some(child) = current {
+                    let next = child.next_sibling();
+                    // We check if it's the lock box (which we added second)
+                    if child != overlay.child().unwrap() {
+                        overlay.remove_overlay(&child);
+                    }
+                    current = next;
+                }
+            }
         }
-        println!("RSS Reader is now unlocked!");
+        println!("RSS Reader is now fully unlocked and active!");
     }
 }
 
@@ -63,11 +87,9 @@ mod imp {
             let header_bar = adw::HeaderBar::new();
             main_box.append(&header_bar);
 
-            // AdwViewSwitcher handles the stack navigation
             let view_switcher = adw::ViewSwitcher::new();
             view_switcher.set_stack(Some(&self.stack));
             view_switcher.set_policy(adw::ViewSwitcherPolicy::Wide);
-            
             header_bar.set_title_widget(Some(&view_switcher));
 
             self.stack.set_vexpand(true);
