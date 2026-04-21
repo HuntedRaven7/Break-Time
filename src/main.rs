@@ -3,6 +3,7 @@ mod timer;
 mod rss;
 mod notes;
 mod todo;
+mod calendar;
 
 use libadwaita as adw;
 use adw::prelude::*;
@@ -14,6 +15,7 @@ use crate::timer::PomodoroTimer;
 use crate::rss::RssReader;
 use crate::notes::NoteEditor;
 use crate::todo::TodoList;
+use crate::calendar::CalendarView;
 
 /*
  * Entry point for the Break-Time application.
@@ -87,6 +89,11 @@ fn build_ui(app: &adw::Application) {
     let todo = TodoList::new();
     let todo_page = imp.stack.add_titled(&todo.container, Some("todo"), "Todo");
     todo_page.set_icon_name(Some("task-due-symbolic"));
+
+    // 5. Setup the Calendar Section (Always accessible)
+    let calendar = CalendarView::new();
+    let calendar_page = imp.stack.add_titled(&calendar.container, Some("calendar"), "Calendar");
+    calendar_page.set_icon_name(Some("x-office-calendar-symbolic"));
 
     window.present();
 }

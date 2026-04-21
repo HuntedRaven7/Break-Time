@@ -57,6 +57,36 @@ impl PomodoroTimer {
         controls.append(&pause_button);
         container.append(&controls);
 
+        // Custom Timer Controls
+        let custom_controls = gtk::Box::new(gtk::Orientation::Horizontal, 5);
+        custom_controls.set_halign(gtk::Align::Center);
+        custom_controls.set_margin_top(10);
+
+        let hours_spin = gtk::SpinButton::with_range(0.0, 99.0, 1.0);
+        hours_spin.set_value(0.0);
+        let hours_label = gtk::Label::new(Some("h"));
+
+        let mins_spin = gtk::SpinButton::with_range(0.0, 59.0, 1.0);
+        mins_spin.set_value(10.0);
+        let mins_label = gtk::Label::new(Some("m"));
+
+        let secs_spin = gtk::SpinButton::with_range(0.0, 59.0, 1.0);
+        secs_spin.set_value(0.0);
+        let secs_label = gtk::Label::new(Some("s"));
+
+        let custom_start = gtk::Button::with_label("Start Custom");
+        custom_start.add_css_class("suggested-action");
+        custom_start.set_margin_start(10);
+
+        custom_controls.append(&hours_spin);
+        custom_controls.append(&hours_label);
+        custom_controls.append(&mins_spin);
+        custom_controls.append(&mins_label);
+        custom_controls.append(&secs_spin);
+        custom_controls.append(&secs_label);
+        custom_controls.append(&custom_start);
+        container.append(&custom_controls);
+
         // Manually Unlock Button
         let unlock_button = gtk::Button::with_label("Unlock RSS Reader Manually");
         unlock_button.add_css_class("outline"); 
@@ -80,9 +110,14 @@ impl PomodoroTimer {
                 let mut seconds = remaining_seconds_clone.borrow_mut();
                 if *seconds > 0 {
                     *seconds -= 1;
-                    let mins = *seconds / 60;
+                    let hrs = *seconds / 3600;
+                    let mins = (*seconds % 3600) / 60;
                     let secs = *seconds % 60;
-                    time_label_clone.set_text(&format!("{:02}:{:02}", mins, secs));
+                    if hrs > 0 {
+                        time_label_clone.set_text(&format!("{:02}:{:02}:{:02}", hrs, mins, secs));
+                    } else {
+                        time_label_clone.set_text(&format!("{:02}:{:02}", mins, secs));
+                    }
                 } else {
                     // Time's up!
                     *is_running_clone.borrow_mut() = false;
@@ -120,6 +155,26 @@ impl PomodoroTimer {
             *remaining_seconds_long.borrow_mut() = 3000;
             pause_button_long.set_label("Pause");
             pause_button_long.set_sensitive(true);
+        });
+
+        let is_running_custom = is_running.clone();
+        let remaining_seconds_custom = remaining_seconds.clone();
+        let pause_button_custom = pause_button.clone();
+        let hours_spin_clone = hours_spin.clone();
+        let mins_spin_clone = mins_spin.clone();
+        let secs_spin_clone = secs_spin.clone();
+        custom_start.connect_clicked(move |_| {
+            let h = hours_spin_clone.value() as u32;
+            let m = mins_spin_clone.value() as u32;
+            let s = secs_spin_clone.value() as u32;
+            let total = (h * 3600) + (m * 60) + s;
+            
+            if total > 0 {
+                *is_running_custom.borrow_mut() = true;
+                *remaining_seconds_custom.borrow_mut() = total;
+                pause_button_custom.set_label("Pause");
+                pause_button_custom.set_sensitive(true);
+            }
         });
 
         let is_running_pause = is_running.clone();
