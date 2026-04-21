@@ -2,6 +2,10 @@
 
 A modern Pomodoro timer and productivity app built with **Rust**, **GTK4**, and **Libadwaita**.
 
+## PLEASE READ THIS
+
+If you are uncomfortable with the use of AI in software please be aware that I used AI to help make this.
+
 ## Features
 
 - **Pomodoro Timer**: 25m/50m work sessions with Pause/Resume and native Linux desktop notifications.
