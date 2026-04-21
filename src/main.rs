@@ -2,6 +2,7 @@ mod ui;
 mod timer;
 mod rss;
 mod notes;
+mod todo;
 
 use libadwaita as adw;
 use adw::prelude::*;
@@ -12,6 +13,7 @@ use crate::ui::window::Window;
 use crate::timer::PomodoroTimer;
 use crate::rss::RssReader;
 use crate::notes::NoteEditor;
+use crate::todo::TodoList;
 
 /*
  * Entry point for the Break-Time application.
@@ -80,6 +82,11 @@ fn build_ui(app: &adw::Application) {
     let notes = NoteEditor::new();
     let notes_page = imp.stack.add_titled(&notes.container, Some("notes"), "Notes");
     notes_page.set_icon_name(Some("document-edit-symbolic"));
+
+    // 4. Setup the Todo List Section (Always accessible)
+    let todo = TodoList::new();
+    let todo_page = imp.stack.add_titled(&todo.container, Some("todo"), "Todo");
+    todo_page.set_icon_name(Some("task-due-symbolic"));
 
     window.present();
 }
