@@ -29,12 +29,17 @@
     <binary>io.github.HuntedRaven7.BreakTime</binary>
   </provides>
 
-  <developer id="io.github.huntedraven7">
-    <name>HuntedRaven7</name>
-  </developer>
+  <developer_name>HuntedRaven7</developer_name>
 
   <url type="homepage">https://github.com/HuntedRaven7/Break-Time</url>
   <url type="bugtracker">https://github.com/HuntedRaven7/Break-Time/issues</url>
+
+  <screenshots>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/HuntedRaven7/Break-Time/main/data/screenshots/main.png</image>
+      <caption>Main application window</caption>
+    </screenshot>
+  </screenshots>
 
   <content_rating type="oars-1.1" />
 
