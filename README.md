@@ -11,6 +11,7 @@ A modern Pomodoro timer and productivity app built with **Rust**, **GTK4**, and 
 
 ## Prerequisites
 
+### System Libraries
 You'll need the GTK4 and Libadwaita development headers installed on your Linux system:
 
 ```bash
@@ -24,6 +25,24 @@ sudo dnf install gtk4-devel libadwaita-devel gtksourceview5-devel
 sudo apt install libgtk-4-dev libadwaita-1-dev libgtksourceview-5-dev
 ```
 
+### Flatpak Tools
+To build the Flatpak, you also need:
+- `flatpak`
+- `flatpak-builder`
+- `appstream` (for metadata validation)
+- `librsvg` and `gdk-pixbuf` tools (required by `appstreamcli` to process icons)
+
+```bash
+# Ubuntu/Debian
+sudo apt install flatpak flatpak-builder appstream librsvg2-bin libgdk-pixbuf2.0-bin
+
+# Fedora
+sudo dnf install flatpak flatpak-builder appstream librsvg2 libgdk-pixbuf2
+
+# Arch Linux
+sudo pacman -S flatpak flatpak-builder appstream librsvg gdk-pixbuf2
+```
+
 ## How to Run
 
 ```bash
@@ -32,17 +51,23 @@ cargo run
 
 ## Flatpak
 
-You can also build and install Break-Time as a Flatpak:
+You can build and install Break-Time as a Flatpak using the provided automation script:
 
 ```bash
-# Install the GNOME SDK and Rust extension (one-time setup)
-flatpak install flathub org.gnome.Sdk//47 org.gnome.Platform//47
-flatpak install flathub org.freedesktop.Sdk.Extension.rust-stable//24.08
+# This script will automatically set up the environment and build the app
+./build-flatpak.sh
+```
 
+Alternatively, you can build manually with `flatpak-builder`:
+
+```bash
 # Build and install locally
 flatpak-builder --user --install --force-clean build-dir io.github.HuntedRaven7.BreakTime.yml
+```
 
-# Run
+Run the application:
+
+```bash
 flatpak run io.github.HuntedRaven7.BreakTime
 ```
 

@@ -1,11 +1,11 @@
 app-id: io.github.HuntedRaven7.BreakTime
 runtime: org.gnome.Platform
-runtime-version: '47'
+runtime-version: '50'
 sdk: org.gnome.Sdk
 sdk-extensions:
   - org.freedesktop.Sdk.Extension.rust-stable
 
-command: break-time
+command: io.github.HuntedRaven7.BreakTime
 
 finish-args:
   # Wayland & X11 display access
@@ -25,16 +25,37 @@ build-options:
   build-args:
     - --share=network
 
+cleanup:
+  - /include
+  - /lib/pkgconfig
+  - /share/pkgconfig
+  - /share/aclocal
+  - /man
+  - /share/man
+  - /share/gtk-doc
+  - /share/info
+  - "*.la"
+  - "*.a"
+
 modules:
   - name: break-time
     buildsystem: simple
     build-commands:
+      - cargo --version
       - cargo fetch --manifest-path Cargo.toml --verbose
       - cargo build --release --verbose
-      - install -Dm755 target/release/break-time /app/bin/break-time
+      # Install binary with full App ID
+      - install -Dm755 target/release/break-time /app/bin/io.github.HuntedRaven7.BreakTime
+      - ln -s io.github.HuntedRaven7.BreakTime /app/bin/break-time
+      # Install Desktop file
       - install -Dm644 data/io.github.HuntedRaven7.BreakTime.desktop /app/share/applications/io.github.HuntedRaven7.BreakTime.desktop
+      # Install Metainfo
       - install -Dm644 data/io.github.HuntedRaven7.BreakTime.metainfo.xml /app/share/metainfo/io.github.HuntedRaven7.BreakTime.metainfo.xml
+      # Install Icons (SVG and PNG for maximum compatibility)
       - install -Dm644 data/icons/hicolor/scalable/apps/io.github.HuntedRaven7.BreakTime.svg /app/share/icons/hicolor/scalable/apps/io.github.HuntedRaven7.BreakTime.svg
+      - install -Dm644 data/icons/hicolor/128x128/apps/io.github.HuntedRaven7.BreakTime.png /app/share/icons/hicolor/128x128/apps/io.github.HuntedRaven7.BreakTime.png
+      # Internal validation check
+      - appstreamcli validate --no-net /app/share/metainfo/io.github.HuntedRaven7.BreakTime.metainfo.xml
     sources:
       - type: dir
         path: .
