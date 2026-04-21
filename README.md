@@ -8,10 +8,21 @@ If you are uncomfortable with the use of AI in software please be aware that I u
 
 ## Features
 
-- **Pomodoro Timer**: 25m/50m work sessions with Pause/Resume and native Linux desktop notifications.
-- **Persistent RSS Reader**: Unlocked only after completing a work session. Supports multiple feeds and persists your feed list to `~/.config/break-time/feeds.json`.
-- **Markdown Notes**: Always-accessible markdown editor with syntax highlighting, custom themes, and a "Save to .md" feature.
-- **Reliable Reddit Support**: Automatically fallbacks to stable Redlib instances (`redlib.catsarch.com`) to bypass Reddit's bot-detection filters.
+- **Pomodoro Timer**: Standard 25m/50m work sessions, plus a **Custom Timer** with hours, minutes, and seconds support. Includes native Linux desktop notifications.
+- **Persistent RSS Reader**: Unlocked only after completing a work session. Supports multiple feeds and persists your feed list.
+- **Advanced Todo List**: Grid-based card layout for task management, featuring priority pinning (📌), task deletion, and JSON persistence.
+- **Interactive Calendar**: Split-view calendar with persistent event management for any date.
+- **Markdown Notes**: Always-accessible markdown editor with syntax highlighting and a "Save to .md" feature.
+- **Reliable Reddit Support**: Automatically fallsbacks to stable Redlib instances (`redlib.catsarch.com`) to bypass Reddit's bot-detection filters.
+
+## Data Persistence
+
+Your data is saved locally for easy backup and portability. On Linux, your files are located at:
+
+- **Todo Tasks**: `~/.local/share/BreakTime/todos.json`
+- **Calendar Events**: `~/.local/share/BreakTime/calendar_events.json`
+- **RSS Feeds**: `~/.config/break-time/feeds.json` (or standard config dir)
+
 
 ## Prerequisites
 
