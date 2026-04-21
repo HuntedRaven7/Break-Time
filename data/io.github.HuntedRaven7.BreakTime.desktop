@@ -1,9 +1,11 @@
 [Desktop Entry]
+Version=1.0
+Type=Application
 Name=Break-Time
 Comment=Pomodoro timer and productivity app
-Exec=break-time
+Exec=io.github.HuntedRaven7.BreakTime
 Icon=io.github.HuntedRaven7.BreakTime
 Terminal=false
-Type=Application
-Categories=Utility;GTK;
-Keywords=pomodoro;timer;productivity;rss;notes;
+Categories=Utility;
+Keywords=pomodoro;timer;productivity;
+StartupWMClass=io.github.HuntedRaven7.BreakTime
