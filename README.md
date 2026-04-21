@@ -10,10 +10,13 @@ If you are uncomfortable with the use of AI in software please be aware that I u
 
 - **Pomodoro Timer**: Standard 25m/50m work sessions, plus a **Custom Timer** with hours, minutes, and seconds support. Includes native Linux desktop notifications.
 - **Persistent RSS Reader**: Unlocked only after completing a work session. Supports multiple feeds and persists your feed list.
-- **Advanced Todo List**: Grid-based card layout for task management, featuring priority pinning (📌), task deletion, and JSON persistence.
-- **Interactive Calendar**: Split-view calendar with persistent event management for any date.
-- **Markdown Notes**: Always-accessible markdown editor with syntax highlighting and a "Save to .md" feature.
-- **Reliable Reddit Support**: Automatically fallsbacks to stable Redlib instances (`redlib.catsarch.com`) to bypass Reddit's bot-detection filters.
+- **Integrated Todo & Notes**: A unified, resizable workspace for managing tasks and writing notes side-by-side. 
+- **Linked Task-Notes**: Instantly bind Markdown files to specific Todo items. Click the "📝" icon on any task to open its associated note instantly.
+- **Tabbed Markdown Editor**: Advanced editor supporting multiple open files simultaneously with syntax highlighting, a "Pin Active Note" feature, and persistent theme selection.
+- **Workspace Resizing**: Smoothly adjust the focus of your workspace by dragging the boundary between tasks and notes, or collapse the sidebar entirely for distraction-free writing.
+- **System-Adaptive Themes**: Editor themes automatically sync with system-wide light/dark preferences, ensuring a consistent visual experience.
+- **Interactive Calendar**: Split-view calendar with persistent event management and visual markers for any date.
+- **Reliable Reddit Support**: Automatic fallback to stable Redlib instances (`redlib.catsarch.com`) to ensure uninterrupted feed access.
 
 ## Data Persistence
 
@@ -21,7 +24,8 @@ Your data is saved locally for easy backup and portability. On Linux, your files
 
 - **Todo Tasks**: `~/.local/share/BreakTime/todos.json`
 - **Calendar Events**: `~/.local/share/BreakTime/calendar_events.json`
-- **RSS Feeds**: `~/.config/break-time/feeds.json` (or standard config dir)
+- **RSS Feeds**: `~/.config/break-time/feeds.json`
+- **Note Settings**: `~/.config/break-time/note_settings.json` (Stores your preferred editor theme)
 
 
 ## Prerequisites
