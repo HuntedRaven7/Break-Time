@@ -9,7 +9,7 @@ If you are uncomfortable with the use of AI in software please be aware that I u
 ## Features
 
 - **Pomodoro Timer**: Standard 25m/50m work sessions, plus a **Custom Timer** with hours, minutes, and seconds support. Includes native Linux desktop notifications.
-- **Persistent RSS Reader**: Unlocked only after completing a work session. Supports multiple feeds and persists your feed list.
+- **Persistent RSS Reader**: Multiple feeds with local persistence; use the RSS tab any time. One-click refresh loads recent articles from your saved URLs.
 - **Integrated Todo & Notes**: A unified, resizable workspace for managing tasks and writing notes side-by-side. 
 - **Linked Task-Notes**: Instantly bind Markdown files to specific Todo items. Click the "📝" icon on any task to open its associated note instantly.
 - **Tabbed Markdown Editor**: Advanced editor supporting multiple open files simultaneously with syntax highlighting, a "Pin Active Note" feature, and persistent theme selection.
@@ -94,4 +94,4 @@ flatpak run io.github.HuntedRaven7.BreakTime
 
 ## Why?
 
-Break-Time is designed to help you focus. By locking your distracting RSS feeds (Reddit, news, etc.) behind a work timer, you can ensure you've earned your break before you dive into the news.
+Break-Time combines a straightforward Pomodoro timer with notes, tasks, calendar, and RSS in one window—so you can time work sessions and switch to reading or planning without juggling separate apps.
