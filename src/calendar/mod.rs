@@ -5,7 +5,7 @@ use std::cell::RefCell;
 use std::fs;
 use std::path::PathBuf;
 use std::rc::Rc;
-use chrono::{Local, NaiveDate};
+use chrono::{Datelike, Local, NaiveDate};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct CalendarEvent {
@@ -84,6 +84,41 @@ impl CalendarView {
         container.append(&cal_section);
         container.append(&event_section);
 
+        // Marking Logic
+        let update_markers = {
+            let calendar = calendar.clone();
+            let events = events.clone();
+            move || {
+                calendar.clear_marks();
+                let date = calendar.date();
+                let year = date.year();
+                let month = date.month();
+                
+                let current_events = events.borrow();
+                for event in current_events.iter() {
+                    if let Ok(parsed_date) = NaiveDate::parse_from_str(&event.date, "%Y-%m-%d") {
+                        if parsed_date.year() == year && parsed_date.month() as i32 == month {
+                            calendar.mark_day(parsed_date.day());
+                        }
+                    }
+                }
+            }
+        };
+
+        // Initial markers
+        update_markers();
+
+        // Refresh markers when month/year changes
+        let update_m = update_markers.clone();
+        calendar.connect_closure("notify::month", false, glib::closure_local!(move |_: gtk::Calendar, _: glib::ParamSpec| {
+            update_m();
+        }));
+
+        let update_y = update_markers.clone();
+        calendar.connect_closure("notify::year", false, glib::closure_local!(move |_: gtk::Calendar, _: glib::ParamSpec| {
+            update_y();
+        }));
+
         // Logic
         let rerender_fn: Rc<RefCell<Option<Rc<dyn Fn(NaiveDate)>>>> = Rc::new(RefCell::new(None));
 
@@ -91,6 +126,7 @@ impl CalendarView {
         let event_list_box_clone = event_list_box.clone();
         let date_label_clone = date_label.clone();
         let rerender_clone = rerender_fn.clone();
+        let update_markers_del = update_markers.clone();
 
         *rerender_fn.borrow_mut() = Some(Rc::new(move |date: NaiveDate| {
             date_label_clone.set_text(&date.format("%B %e, %Y").to_string());
@@ -136,9 +172,11 @@ impl CalendarView {
                     let id = event.id.clone();
                     let events_del = events_clone.clone();
                     let rerender_del = rerender_clone.clone();
+                    let update_del = update_markers_del.clone();
                     delete_btn.connect_clicked(move |_| {
                         events_del.borrow_mut().retain(|e| e.id != id);
                         Self::save_events(&events_del.borrow());
+                        update_del();
                         if let Some(f) = rerender_del.borrow().as_ref() {
                             f(date);
                         }
@@ -191,6 +229,7 @@ impl CalendarView {
 
                 events_add.borrow_mut().push(new_event);
                 Self::save_events(&events_add.borrow());
+                update_markers.clone()();
                 
                 let naive = NaiveDate::from_ymd_opt(
                     date.year(),
