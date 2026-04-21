@@ -15,7 +15,7 @@ You'll need the GTK4 and Libadwaita development headers installed on your Linux 
 
 ```bash
 # Arch Linux
-sudo pacman -S gtk4 libadwaita sourceview5
+sudo pacman -S gtk4 libadwaita gtksourceview5
 
 # Fedora
 sudo dnf install gtk4-devel libadwaita-devel gtksourceview5-devel
