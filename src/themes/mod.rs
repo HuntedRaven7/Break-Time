@@ -1,7 +1,5 @@
 use libadwaita as adw;
-use adw::prelude::*;
 use gtk4 as gtk;
-use gtk::prelude::*;
 use gtk::gdk;
 use serde::{Deserialize, Serialize};
 use std::fs;

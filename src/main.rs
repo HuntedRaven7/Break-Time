@@ -11,6 +11,7 @@ use adw::prelude::*;
 use adw::subclass::prelude::ObjectSubclassIsExt;
 use gtk4 as gtk;
 use gtk::glib;
+use std::rc::Rc;
 use crate::ui::window::Window;
 use crate::timer::PomodoroTimer;
 use crate::rss::RssReader;
@@ -34,6 +35,29 @@ fn main() -> glib::ExitCode {
     application.connect_startup(|_| {
         let theme = ThemeManager::load_settings();
         ThemeManager::apply_theme(theme);
+
+        // Load structural CSS for the Integrated Work Workspace
+        let provider = gtk::CssProvider::new();
+        provider.load_from_string("
+            .work-separator {
+                border-right: none;
+            }
+            paned > separator {
+                min-width: 2px;
+                background-color: alpha(currentColor, 0.3);
+            }
+            .note-editor-container {
+                background-color: @view_bg_color;
+                color: @view_fg_color;
+            }
+        ");
+        if let Some(display) = gtk::gdk::Display::default() {
+            gtk::style_context_add_provider_for_display(
+                &display,
+                &provider,
+                gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
+            );
+        }
     });
 
     application.connect_activate(build_ui);
@@ -87,15 +111,74 @@ fn build_ui(app: &adw::Application) {
     let rss_page = imp.stack.add_titled(&overlay, Some("rss"), "RSS Feed");
     rss_page.set_icon_name(Some("view-list-bullet-symbolic"));
 
-    // 3. Setup the Markdown Note Taking Section (Always accessible)
-    let notes = NoteEditor::new();
-    let notes_page = imp.stack.add_titled(&notes.container, Some("notes"), "Notes");
-    notes_page.set_icon_name(Some("document-edit-symbolic"));
+    // 3. Setup the Integrated Work Section (Notes + Todo)
+    let notes = Rc::new(NoteEditor::new());
+    
+    let notes_clone = notes.clone();
+    let notes_for_get_path = notes.clone();
+    let todo = TodoList::new(
+        Rc::new(move |path| {
+            notes_clone.open_file(std::path::PathBuf::from(path));
+        }),
+        Rc::new(move || {
+            notes_for_get_path.get_current_path()
+        })
+    );
 
-    // 4. Setup the Todo List Section (Always accessible)
-    let todo = TodoList::new();
-    let todo_page = imp.stack.add_titled(&todo.container, Some("todo"), "Todo");
-    todo_page.set_icon_name(Some("task-due-symbolic"));
+    let work_paned = gtk::Paned::new(gtk::Orientation::Horizontal);
+    work_paned.set_start_child(Some(&notes.container));
+    work_paned.set_end_child(Some(&todo.container));
+    work_paned.set_position(400); // Default width
+    work_paned.set_wide_handle(true);
+
+    let last_position = Rc::new(std::cell::Cell::new(400));
+    
+    let work_paned_hide = work_paned.clone();
+    let last_pos_hide = last_position.clone();
+    notes.set_on_hide(move || {
+        last_pos_hide.set(work_paned_hide.position());
+        work_paned_hide.set_position(0);
+    });
+
+    let work_page = imp.stack.add_titled(&work_paned, Some("work"), "Todo & Notes");
+    work_page.set_icon_name(Some("view-list-bullet-symbolic"));
+
+    // Add a toggle button for the notes flap in the header bar
+    let toggle_notes_btn = gtk::ToggleButton::builder()
+        .icon_name("sidebar-show-symbolic")
+        .tooltip_text("Toggle Notes Editor")
+        .css_classes(vec!["flat"])
+        .active(true)
+        .build();
+    
+    let work_paned_clone = work_paned.clone();
+    let last_pos_toggle = last_position.clone();
+    toggle_notes_btn.connect_toggled(move |btn| {
+        if btn.is_active() {
+            let pos = last_pos_toggle.get();
+            work_paned_clone.set_position(if pos > 0 { pos } else { 400 });
+        } else {
+            last_pos_toggle.set(work_paned_clone.position());
+            work_paned_clone.set_position(0);
+        }
+    });
+
+    let toggle_notes_btn_sync = toggle_notes_btn.clone();
+    work_paned.connect_position_notify(move |paned| {
+        let pos = paned.position();
+        toggle_notes_btn_sync.set_active(pos > 0);
+    });
+
+    // Only show the toggle button when we are on the "Work" page
+    let header_bar = window.header_bar();
+    header_bar.pack_start(&toggle_notes_btn);
+    
+    let toggle_btn_visible = toggle_notes_btn.clone();
+    imp.stack.connect_visible_child_name_notify(move |stack| {
+        let name = stack.visible_child_name().unwrap_or_default();
+        toggle_btn_visible.set_visible(name == "work");
+    });
+    toggle_notes_btn.set_visible(false); // Initial state
 
     // 5. Setup the Calendar Section (Always accessible)
     let calendar = CalendarView::new();

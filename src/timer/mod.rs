@@ -2,7 +2,6 @@ use libadwaita as adw;
 use adw::prelude::*;
 use gtk4 as gtk;
 use gtk::glib;
-use gtk::prelude::*;
 use std::cell::RefCell;
 use std::rc::Rc;
 use notify_rust::Notification;
@@ -14,10 +13,10 @@ use notify_rust::Notification;
 
 pub struct PomodoroTimer {
     pub container: gtk::Box,
-    time_label: gtk::Label,
-    is_running: Rc<RefCell<bool>>,
-    remaining_seconds: Rc<RefCell<u32>>,
-    on_complete: Rc<dyn Fn()>,
+    _time_label: gtk::Label,
+    _is_running: Rc<RefCell<bool>>,
+    _remaining_seconds: Rc<RefCell<u32>>,
+    _on_complete: Rc<dyn Fn()>,
 }
 
 impl PomodoroTimer {
@@ -196,10 +195,10 @@ impl PomodoroTimer {
 
         Self {
             container,
-            time_label,
-            is_running,
-            remaining_seconds,
-            on_complete,
+            _time_label: time_label,
+            _is_running: is_running,
+            _remaining_seconds: remaining_seconds,
+            _on_complete: on_complete,
         }
     }
 }

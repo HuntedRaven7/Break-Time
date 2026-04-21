@@ -16,7 +16,7 @@ pub struct CalendarEvent {
 
 pub struct CalendarView {
     pub container: gtk::Box,
-    events: Rc<RefCell<Vec<CalendarEvent>>>,
+    _events: Rc<RefCell<Vec<CalendarEvent>>>,
 }
 
 impl CalendarView {
@@ -253,7 +253,7 @@ impl CalendarView {
 
         Self {
             container,
-            events,
+            _events: events,
         }
     }
 

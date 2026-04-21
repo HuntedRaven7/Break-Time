@@ -3,9 +3,7 @@ pub mod storage;
 use libadwaita as adw;
 use adw::prelude::*;
 use gtk4 as gtk;
-use gtk::gdk;
 use gtk::glib;
-use gtk::prelude::*;
 use std::cell::RefCell;
 use std::rc::Rc;
 use chrono::{Utc, Duration};
@@ -290,6 +288,3 @@ fn strip_html_tags(input: &str) -> String {
     output.replace("&amp;", "&").replace("&quot;", "\"").replace("&apos;", "'").trim().to_string()
 }
 
-fn extract_image_url(_html: &str) -> Option<String> {
-    None
-}

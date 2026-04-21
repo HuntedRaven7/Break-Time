@@ -1,14 +1,13 @@
 use libadwaita as adw;
 use adw::prelude::*;
 use gtk4 as gtk;
-use gtk::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
 use std::fs;
 use std::path::PathBuf;
 use std::rc::Rc;
 use gtk::glib;
-use chrono::{Datelike, Local, NaiveDate, Days, Months};
+use chrono::{NaiveDate, Days, Months};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, PartialOrd)]
 pub enum Priority {
@@ -49,16 +48,20 @@ pub struct Task {
     pub subtasks: Vec<Subtask>,
     #[serde(default)]
     pub tags: Vec<String>,
+    #[serde(default)]
+    pub note_path: Option<String>,
 }
 
 pub struct TodoList {
     pub container: gtk::Box,
-    flow_box: gtk::FlowBox,
-    tasks: Rc<RefCell<Vec<Task>>>,
+    _flow_box: gtk::FlowBox,
+    _tasks: Rc<RefCell<Vec<Task>>>,
+    _on_open_note: Rc<dyn Fn(String)>,
+    _get_current_note_path: Rc<dyn Fn() -> Option<String>>,
 }
 
 impl TodoList {
-    pub fn new() -> Self {
+    pub fn new(on_open_note: Rc<dyn Fn(String)>, get_current_note_path: Rc<dyn Fn() -> Option<String>>) -> Self {
         let container = gtk::Box::new(gtk::Orientation::Vertical, 0);
 
         let top_bar = gtk::Box::new(gtk::Orientation::Horizontal, 10);
@@ -211,6 +214,8 @@ impl TodoList {
         let flow_box_clone = flow_box.clone();
         let tasks_clone = tasks.clone();
         let rerender_clone = rerender_fn.clone();
+        let on_open_note_clone = on_open_note.clone();
+        let get_path_clone = get_current_note_path.clone();
         
         *rerender_fn.borrow_mut() = Some(Rc::new(move || {
             while let Some(child) = flow_box_clone.first_child() {
@@ -228,15 +233,24 @@ impl TodoList {
             drop(tasks_mut); // Prevent borrow issues during element creation
             
             for task in tasks_snapshot.iter() {
-                let card = Self::create_task_card(task, tasks_clone.clone(), flow_box_clone.clone(), rerender_clone.clone());
+                let card = Self::create_task_card(
+                    task, 
+                    tasks_clone.clone(), 
+                    flow_box_clone.clone(), 
+                    rerender_clone.clone(), 
+                    on_open_note_clone.clone(),
+                    get_path_clone.clone()
+                );
                 flow_box_clone.append(&card);
             }
         }));
 
         let todo_list = Self {
             container,
-            flow_box,
-            tasks: tasks.clone(),
+            _flow_box: flow_box,
+            _tasks: tasks.clone(),
+            _on_open_note: on_open_note,
+            _get_current_note_path: get_current_note_path,
         };
 
         // Initial render
@@ -296,6 +310,7 @@ impl TodoList {
                     recurring,
                     subtasks: Vec::new(),
                     tags: Vec::new(),
+                    note_path: None,
                 };
                 tasks_add_clone.borrow_mut().push(task.clone());
                 Self::save_tasks(&tasks_add_clone.borrow());
@@ -337,7 +352,9 @@ impl TodoList {
         task: &Task, 
         tasks_ref: Rc<RefCell<Vec<Task>>>, 
         flow_box: gtk::FlowBox, 
-        rerender_fn: Rc<RefCell<Option<Rc<dyn Fn()>>>>
+        rerender_fn: Rc<RefCell<Option<Rc<dyn Fn()>>>>,
+        on_open_note: Rc<dyn Fn(String)>,
+        get_current_note_path: Rc<dyn Fn() -> Option<String>>
     ) -> gtk::Box {
         let card = gtk::Box::new(gtk::Orientation::Horizontal, 12);
         card.add_css_class("card");
@@ -403,15 +420,18 @@ impl TodoList {
         }
 
         let priority_btn = gtk::ToggleButton::builder()
-            .icon_name("starred-symbolic")
+            .icon_name(if task.priority_level == Priority::High { "emblem-important-symbolic" } else { "non-starred-symbolic" })
+            .css_classes(vec!["flat", "circular"])
+            .active(task.priority_level == Priority::High)
+            .valign(gtk::Align::Center)
+            .build();
+
+        let note_btn = gtk::Button::builder()
+            .icon_name("document-edit-symbolic")
             .css_classes(vec!["flat", "circular"])
             .valign(gtk::Align::Center)
-            .active(task.priority)
+            .visible(task.note_path.is_some())
             .build();
-            
-        if task.priority {
-            priority_btn.add_css_class("suggested-action");
-        }
 
         let delete_btn = gtk::Button::builder()
             .icon_name("user-trash-symbolic")
@@ -422,6 +442,7 @@ impl TodoList {
 
         header_hbox.append(&check);
         header_hbox.append(&text_vbox);
+        header_hbox.append(&note_btn);
         header_hbox.append(&priority_btn);
         header_hbox.append(&delete_btn);
         main_vbox.append(&header_hbox);
@@ -657,6 +678,16 @@ impl TodoList {
             .label("🟢 Low Priority")
             .css_classes(vec!["flat"])
             .build();
+
+        let popover_note = gtk::Button::builder()
+            .label("📝 Link Note File")
+            .css_classes(vec!["flat"])
+            .build();
+
+        let popover_pin_active = gtk::Button::builder()
+            .label("📌 Pin Active Note")
+            .css_classes(vec!["flat"])
+            .build();
             
         let popover_del = gtk::Button::builder()
             .label("🗑 Delete")
@@ -666,6 +697,8 @@ impl TodoList {
         popover_box.append(&popover_high);
         popover_box.append(&popover_med);
         popover_box.append(&popover_low);
+        popover_box.append(&popover_note);
+        popover_box.append(&popover_pin_active);
         popover_box.append(&popover_del);
         popover.set_child(Some(&popover_box));
         popover.set_parent(&card);
@@ -696,6 +729,67 @@ impl TodoList {
         popover_med.connect_clicked(move |_| set_m(Priority::Medium));
         let set_l = set_priority.clone();
         popover_low.connect_clicked(move |_| set_l(Priority::Low));
+
+        // Note linking logic
+        let task_id_note = task.id.clone();
+        let tasks_note_clone = tasks_ref.clone();
+        let rerender_note = rerender_fn.clone();
+        let pop_down_note = popover.clone();
+        popover_note.connect_clicked(move |_| {
+            let file_dialog = gtk::FileDialog::new();
+            file_dialog.set_title("Link Markdown Note");
+            
+            let task_id = task_id_note.clone();
+            let tasks = tasks_note_clone.clone();
+            let rerender = rerender_note.clone();
+            let pop = pop_down_note.clone();
+            file_dialog.open(Option::<&gtk::Window>::None, Option::<&gtk::gio::Cancellable>::None, move |result| {
+                if let Ok(file) = result {
+                    if let Some(path) = file.path() {
+                        let mut tasks_mut = tasks.borrow_mut();
+                        if let Some(t) = tasks_mut.iter_mut().find(|t| t.id == task_id) {
+                            t.note_path = Some(path.to_str().unwrap().to_string());
+                        }
+                        Self::save_tasks(&tasks_mut);
+                        drop(tasks_mut);
+                        if let Some(f) = rerender.borrow().as_ref() {
+                            f();
+                        }
+                    }
+                }
+                pop.popdown();
+            });
+        });
+
+        // Pin Active Note logic
+        let task_id_pin = task.id.clone();
+        let tasks_pin_clone = tasks_ref.clone();
+        let rerender_pin = rerender_fn.clone();
+        let get_path = get_current_note_path.clone();
+        let pop_down_pin = popover.clone();
+        popover_pin_active.connect_clicked(move |_| {
+            if let Some(path) = get_path() {
+                let mut tasks_mut = tasks_pin_clone.borrow_mut();
+                if let Some(t) = tasks_mut.iter_mut().find(|t| t.id == task_id_pin) {
+                    t.note_path = Some(path);
+                }
+                Self::save_tasks(&tasks_mut);
+                drop(tasks_mut);
+                if let Some(f) = rerender_pin.borrow().as_ref() {
+                    f();
+                }
+            }
+            pop_down_pin.popdown();
+        });
+
+        // Open note logic
+        let note_path_click = task.note_path.clone();
+        let on_open_note_click = on_open_note.clone();
+        note_btn.connect_clicked(move |_| {
+            if let Some(ref path) = note_path_click {
+                on_open_note_click(path.clone());
+            }
+        });
 
         let delete_btn_clone = delete_btn.clone();
         popover_del.connect_clicked(move |_| {

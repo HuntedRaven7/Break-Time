@@ -20,6 +20,10 @@ impl Window {
         glib::Object::builder().property("application", app).build()
     }
 
+    pub fn header_bar(&self) -> adw::HeaderBar {
+        self.imp().header_bar.clone()
+    }
+
     // This method is called to unlock the RSS section
     pub fn unlock_rss(&self) {
         let imp = self.imp();
@@ -66,6 +70,7 @@ mod imp {
     pub struct Window {
         pub rss_unlocked: Cell<bool>,
         pub stack: adw::ViewStack,
+        pub header_bar: adw::HeaderBar,
     }
 
     #[glib::object_subclass]
@@ -84,13 +89,12 @@ mod imp {
             obj.set_default_size(800, 600);
 
             let main_box = gtk::Box::new(gtk::Orientation::Vertical, 0);
-            let header_bar = adw::HeaderBar::new();
-            main_box.append(&header_bar);
+            main_box.append(&self.header_bar);
 
             let view_switcher = adw::ViewSwitcher::new();
             view_switcher.set_stack(Some(&self.stack));
             view_switcher.set_policy(adw::ViewSwitcherPolicy::Wide);
-            header_bar.set_title_widget(Some(&view_switcher));
+            self.header_bar.set_title_widget(Some(&view_switcher));
 
             self.stack.set_vexpand(true);
             main_box.append(&self.stack);
