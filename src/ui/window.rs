@@ -4,9 +4,8 @@ use libadwaita::subclass::prelude::*;
 use gtk4 as gtk;
 use gtk::glib;
 
-/* 
+/*
  * The main application window for Break-Time.
- * Updated: Senior Dev Robust Unlocking Logic.
  */
 
 glib::wrapper! {
@@ -24,51 +23,13 @@ impl Window {
         self.imp().header_bar.clone()
     }
 
-    // This method is called to unlock the RSS section
-    pub fn unlock_rss(&self) {
-        let imp = self.imp();
-        
-        // Idempotency: don't run unlocking logic twice
-        if imp.rss_unlocked.get() {
-            return;
-        }
-        imp.rss_unlocked.set(true);
-        
-        // Find the RSS page (the Overlay)
-        if let Some(rss_child) = imp.stack.child_by_name("rss") {
-            // 1. Re-enable the entire tab content
-            rss_child.set_sensitive(true);
-            
-            // 2. Dig into the overlay to find and enable the RSS container specifically
-            if let Some(overlay) = rss_child.downcast_ref::<gtk::Overlay>() {
-                if let Some(rss_container) = overlay.child() {
-                    rss_container.set_sensitive(true);
-                }
-                
-                // 3. Remove the lock screen definitively
-                // Overlays added via add_overlay are siblings of the main child
-                let mut current = overlay.first_child();
-                while let Some(child) = current {
-                    let next = child.next_sibling();
-                    // We check if it's the lock box (which we added second)
-                    if child != overlay.child().unwrap() {
-                        overlay.remove_overlay(&child);
-                    }
-                    current = next;
-                }
-            }
-        }
-        println!("RSS Reader is now fully unlocked and active!");
-    }
 }
 
 mod imp {
-    use std::cell::Cell;
     use super::*;
 
     #[derive(Debug, Default)]
     pub struct Window {
-        pub rss_unlocked: Cell<bool>,
         pub stack: adw::ViewStack,
         pub header_bar: adw::HeaderBar,
     }

@@ -16,11 +16,10 @@ pub struct PomodoroTimer {
     _time_label: gtk::Label,
     _is_running: Rc<RefCell<bool>>,
     _remaining_seconds: Rc<RefCell<u32>>,
-    _on_complete: Rc<dyn Fn()>,
 }
 
 impl PomodoroTimer {
-    pub fn new(on_complete: impl Fn() + 'static) -> Self {
+    pub fn new() -> Self {
         let container = gtk::Box::new(gtk::Orientation::Vertical, 20);
         container.set_valign(gtk::Align::Center);
         container.set_halign(gtk::Align::Center);
@@ -86,22 +85,14 @@ impl PomodoroTimer {
         custom_controls.append(&custom_start);
         container.append(&custom_controls);
 
-        // Manually Unlock Button
-        let unlock_button = gtk::Button::with_label("Unlock RSS Reader Manually");
-        unlock_button.add_css_class("outline"); 
-        unlock_button.set_margin_top(60);
-        unlock_button.set_tooltip_text(Some("Skip the timer and access your RSS feeds immediately"));
-        container.append(&unlock_button);
 
         let is_running = Rc::new(RefCell::new(false));
         let remaining_seconds = Rc::new(RefCell::new(1500));
-        let on_complete = Rc::new(on_complete);
 
         // Main Timer Loop
         let time_label_clone = time_label.clone();
         let is_running_clone = is_running.clone();
         let remaining_seconds_clone = remaining_seconds.clone();
-        let on_complete_clone = on_complete.clone();
         let pause_button_clone = pause_button.clone();
 
         glib::timeout_add_local(std::time::Duration::from_secs(1), move || {
@@ -125,11 +116,9 @@ impl PomodoroTimer {
                     
                     let _ = Notification::new()
                         .summary("Break-Time")
-                        .body("Time's up! Your RSS feed is now unlocked. Take a break!")
+                        .body("Time's up! Take a break!")
                         .icon("alarm-clock")
                         .show();
-                    
-                    on_complete_clone();
                 }
             }
             glib::ControlFlow::Continue
@@ -188,17 +177,12 @@ impl PomodoroTimer {
             }
         });
 
-        let on_complete_unlock = on_complete.clone();
-        unlock_button.connect_clicked(move |_| {
-            on_complete_unlock();
-        });
 
         Self {
             container,
             _time_label: time_label,
             _is_running: is_running,
             _remaining_seconds: remaining_seconds,
-            _on_complete: on_complete,
         }
     }
 }
