@@ -4,6 +4,7 @@ use gtk4 as gtk;
 use gtk::prelude::*;
 use sourceview5::prelude::*;
 use std::fs;
+use std::rc::Rc;
 use gtk::gio;
 
 /*
@@ -60,14 +61,31 @@ impl NoteEditor {
         let lang = lang_manager.language("markdown");
         buffer.set_language(lang.as_ref());
         
-        // Apply default theme if available
-        if let Some(scheme) = theme_manager.scheme("adwaita-dark").or_else(|| theme_manager.scheme("classic")) {
-            buffer.set_style_scheme(Some(&scheme));
-            // Set the dropdown to the correct index if we found a match
-            if let Some(index) = scheme_ids.iter().position(|id| id == &scheme.id().to_string()) {
-                theme_dropdown.set_selected(index as u32);
+        // Style Scheme Logic (Follow System Defaults)
+        let style_manager = adw::StyleManager::default();
+        let buffer_for_system = buffer.clone();
+        let theme_manager_system = theme_manager.clone();
+        let theme_dropdown_system = theme_dropdown.clone();
+        let scheme_ids_system = scheme_ids.clone();
+
+        let apply_system_theme = Rc::new(move |dark: bool| {
+            let scheme_id = if dark { "adwaita-dark" } else { "adwaita" };
+            if let Some(scheme) = theme_manager_system.scheme(scheme_id) {
+                buffer_for_system.set_style_scheme(Some(&scheme));
+                if let Some(index) = scheme_ids_system.iter().position(|id| id == scheme_id) {
+                    theme_dropdown_system.set_selected(index as u32);
+                }
             }
-        }
+        });
+
+        // Initial apply
+        apply_system_theme(style_manager.is_dark());
+
+        // Dynamic update
+        let apply_clone = apply_system_theme.clone();
+        style_manager.connect_dark_notify(move |sm| {
+            apply_clone(sm.is_dark());
+        });
 
         let editor = sourceview5::View::with_buffer(&buffer);
         editor.set_vexpand(true);

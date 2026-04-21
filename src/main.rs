@@ -4,6 +4,7 @@ mod rss;
 mod notes;
 mod todo;
 mod calendar;
+mod themes;
 
 use libadwaita as adw;
 use adw::prelude::*;
@@ -16,6 +17,7 @@ use crate::rss::RssReader;
 use crate::notes::NoteEditor;
 use crate::todo::TodoList;
 use crate::calendar::CalendarView;
+use crate::themes::{Theme, ThemeManager};
 
 /*
  * Entry point for the Break-Time application.
@@ -28,6 +30,11 @@ fn main() -> glib::ExitCode {
     let application = adw::Application::builder()
         .application_id("io.github.HuntedRaven7.BreakTime")
         .build();
+
+    application.connect_startup(|_| {
+        let theme = ThemeManager::load_settings();
+        ThemeManager::apply_theme(theme);
+    });
 
     application.connect_activate(build_ui);
 
@@ -94,6 +101,41 @@ fn build_ui(app: &adw::Application) {
     let calendar = CalendarView::new();
     let calendar_page = imp.stack.add_titled(&calendar.container, Some("calendar"), "Calendar");
     calendar_page.set_icon_name(Some("x-office-calendar-symbolic"));
+
+    // 6. Setup the Settings Section
+    let settings_page_content = adw::PreferencesPage::new();
+    settings_page_content.set_title("Settings");
+    settings_page_content.set_icon_name(Some("emblem-system-symbolic"));
+
+    let theme_group = adw::PreferencesGroup::new();
+    theme_group.set_title("Appearance");
+    theme_group.set_description(Some("Customize the look and feel of Break-Time"));
+    
+    let theme_row = adw::ComboRow::new();
+    theme_row.set_title("Theme");
+    
+    let model = gtk::StringList::new(&[]);
+    for theme in Theme::all() {
+        model.append(theme.name());
+    }
+    theme_row.set_model(Some(&model));
+
+    let current_theme = ThemeManager::load_settings();
+    let index = Theme::all().iter().position(|&t| t == current_theme).unwrap_or(0);
+    theme_row.set_selected(index as u32);
+
+    theme_row.connect_selected_notify(move |row| {
+        let selected = row.selected();
+        if let Some(theme) = Theme::all().get(selected as usize) {
+            ThemeManager::apply_theme(*theme);
+        }
+    });
+
+    theme_group.add(&theme_row);
+    settings_page_content.add(&theme_group);
+
+    let settings_page = imp.stack.add_titled(&settings_page_content, Some("settings"), "Settings");
+    settings_page.set_icon_name(Some("emblem-system-symbolic"));
 
     window.present();
 }

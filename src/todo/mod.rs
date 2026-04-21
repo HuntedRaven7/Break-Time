@@ -16,6 +16,8 @@ pub struct Task {
     pub completed: bool,
     #[serde(default)]
     pub priority: bool,
+    #[serde(default)]
+    pub scheduled_time: Option<String>,
 }
 
 pub struct TodoList {
@@ -49,13 +51,15 @@ impl TodoList {
         container.append(&top_bar);
 
         // Input field for new tasks
-        let add_box = gtk::Box::new(gtk::Orientation::Horizontal, 10);
-        add_box.set_margin_start(20);
-        add_box.set_margin_end(20);
-        add_box.set_margin_bottom(20);
+        let add_area = gtk::Box::new(gtk::Orientation::Vertical, 8);
+        add_area.set_margin_start(20);
+        add_area.set_margin_end(20);
+        add_area.set_margin_bottom(20);
 
+        let main_input_row = gtk::Box::new(gtk::Orientation::Horizontal, 10);
+        
         let add_entry = gtk::Entry::builder()
-            .placeholder_text("Add a new task...")
+            .placeholder_text("What needs to be done? (Press Enter to add)")
             .hexpand(true)
             .build();
             
@@ -64,9 +68,34 @@ impl TodoList {
             .css_classes(vec!["suggested-action"])
             .build();
 
-        add_box.append(&add_entry);
-        add_box.append(&add_button);
-        container.append(&add_box);
+        main_input_row.append(&add_entry);
+        main_input_row.append(&add_button);
+        add_area.append(&main_input_row);
+
+        // Optional Time Row
+        let time_row = gtk::Box::new(gtk::Orientation::Horizontal, 10);
+        time_row.set_halign(gtk::Align::Start);
+        
+        let from_label = gtk::Label::builder().label("Time (Optional):").css_classes(vec!["dim-label", "caption"]).build();
+        let from_entry = gtk::Entry::builder()
+            .placeholder_text("From (14:00)")
+            .max_length(5)
+            .width_request(80)
+            .build();
+        let to_label = gtk::Label::builder().label("-").css_classes(vec!["dim-label"]).build();
+        let to_entry = gtk::Entry::builder()
+            .placeholder_text("To (15:00)")
+            .max_length(5)
+            .width_request(80)
+            .build();
+
+        time_row.append(&from_label);
+        time_row.append(&from_entry);
+        time_row.append(&to_label);
+        time_row.append(&to_entry);
+        add_area.append(&time_row);
+
+        container.append(&add_area);
 
         // FlowBox for tasks
         let flow_box = gtk::FlowBox::new();
@@ -134,6 +163,18 @@ impl TodoList {
         let add_action = move || {
             let text = add_entry_clone.text().to_string();
             if !text.trim().is_empty() {
+                let from_t = from_entry.text().to_string();
+                let to_t = to_entry.text().to_string();
+                let scheduled = if !from_t.is_empty() && !to_t.is_empty() {
+                    Some(format!("{} - {}", from_t, to_t))
+                } else if !from_t.is_empty() {
+                    Some(format!("Starts at {}", from_t))
+                } else if !to_t.is_empty() {
+                    Some(format!("Ends at {}", to_t))
+                } else {
+                    None
+                };
+
                 let task = Task {
                     id: std::time::SystemTime::now()
                         .duration_since(std::time::UNIX_EPOCH)
@@ -143,6 +184,7 @@ impl TodoList {
                     text: text.clone(),
                     completed: false,
                     priority: false,
+                    scheduled_time: scheduled,
                 };
                 tasks_add_clone.borrow_mut().push(task.clone());
                 Self::save_tasks(&tasks_add_clone.borrow());
@@ -152,6 +194,8 @@ impl TodoList {
                 }
                 
                 add_entry_clone.set_text("");
+                from_entry.set_text("");
+                to_entry.set_text("");
             }
         };
 
@@ -218,6 +262,20 @@ impl TodoList {
             label.remove_css_class("dim-label");
         }
 
+        let text_vbox = gtk::Box::new(gtk::Orientation::Vertical, 2);
+        text_vbox.set_hexpand(true);
+        text_vbox.set_valign(gtk::Align::Center);
+        text_vbox.append(&label);
+
+        if let Some(time) = &task.scheduled_time {
+            let time_label = gtk::Label::builder()
+                .label(time)
+                .css_classes(vec!["caption", "dim-label"])
+                .halign(gtk::Align::Start)
+                .build();
+            text_vbox.append(&time_label);
+        }
+
         let priority_btn = gtk::ToggleButton::builder()
             .icon_name("starred-symbolic")
             .css_classes(vec!["flat", "circular"])
@@ -237,7 +295,7 @@ impl TodoList {
             .build();
 
         card.append(&check);
-        card.append(&label);
+        card.append(&text_vbox);
         card.append(&priority_btn);
         card.append(&delete_btn);
 
