@@ -55,6 +55,8 @@ cargo run
 
 ## Flatpak
 
+THIS IS REALLY THE RECOMMENDED WAY OF INSTALLING
+
 You can build and install Break-Time as a Flatpak using the provided automation script:
 
 ```bash
